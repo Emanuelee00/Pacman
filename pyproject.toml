@@ -1,0 +1,39 @@
+[project]
+name = "pacman"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "mazegenerator",
+    "pydantic>=2.13.4",
+    "pygame>=2.6.1",
+]
+
+[tool.uv.sources]
+mazegenerator = { path = "mazegenerator-2.0.1-py3-none-any.whl" }
+
+[dependency-groups]
+dev = [
+    "flake8>=7.3.0",
+    "flake8-docstrings>=1.7.0",
+    "mypy>=2.1.0",
+    "pyinstaller>=6.0.0",
+]
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"pacman" = ["assets/**"]
+
+[[tool.mypy.overrides]]
+module = "mazegenerator.*"
+ignore_missing_imports = true
+
+[project.scripts]
+pacman = "pacman.main:main"

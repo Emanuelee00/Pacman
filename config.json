@@ -1,0 +1,120 @@
+{
+  "highscore_filename": "highscores.json",
+  "lives": 3,
+  "points_per_pacgum": 10,
+  "points_per_super_pacgum": 50,
+  "points_per_ghost": 200,
+  "seed": 42,
+  "levels": [
+    {
+      "id": 1,
+      "width": 14,
+      "height": 12,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "euclidean" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "euclidean" },
+        { "type": "Clyde", "strategy": "bfs" }
+      ]
+   },
+    {
+      "id": 2,
+      "width": 14,
+      "height": 13,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "euclidean" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "euclidean" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 3,
+      "width": 14,
+      "height": 14,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "euclidean" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "euclidean" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 4,
+      "width": 16,
+      "height": 10,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "euclidean" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 5,
+      "width": 15,
+      "height": 15,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 6,
+      "width": 10,
+      "height": 16,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 7,
+      "width": 17,
+      "height": 14,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "euclidean" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 8,
+      "width": 17,
+      "height": 15,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "bfs" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+    },
+    {
+      "id": 9,
+      "width": 17,
+      "height": 16,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "bfs" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+     ]
+    },
+    {
+      "id": 10,
+      "width": 17,
+      "height": 17,
+      "ghosts": [
+        { "type": "Blinky", "strategy": "bfs" },
+        { "type": "Pinky", "strategy": "bfs" },
+        { "type": "Inky", "strategy": "bfs" },
+        { "type": "Clyde", "strategy": "euclidean" }
+      ]
+}
+  ]
+}
