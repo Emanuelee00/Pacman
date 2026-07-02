@@ -1,4 +1,5 @@
 """Main entry point for Pacman game."""
+import asyncio
 from pacman.main import main
 
-main()
+asyncio.run(main())

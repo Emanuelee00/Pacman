@@ -3,6 +3,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 from pathlib import Path
+import asyncio
 import sys
 import pygame
 from pacman.scenes.menu_scene import MenuScene
@@ -161,7 +162,7 @@ class Game:
         surface.blit(text_surface, text_rect)
         return text_rect
 
-    def run(self) -> None:
+    async def run(self) -> None:
         """Run the main game loop."""
         while self.running:
 
@@ -179,4 +180,5 @@ class Game:
 
             pygame.display.flip()
             self.dt = self.clock.tick(FPS)
+            await asyncio.sleep(0)
         pygame.quit()
