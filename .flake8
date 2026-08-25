@@ -2,5 +2,7 @@
 max-line-length = 79
 exclude =
     ./src/pacman/mazegenerator/mazegenerator.py
+    ./web/vendor/mazegenerator/
+    ./web/pacman/
     venv/
     .venv/

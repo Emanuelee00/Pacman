@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pydantic import (
     BaseModel,
     Field,
@@ -13,6 +14,8 @@ from pydantic import (
 from typing import Any, Literal
 from pathlib import Path
 from random import randint
+
+WEB_HIGHSCORE_KEY = "pacman_highscores"
 
 DEFAULT_LEVELS = [
     {
@@ -273,11 +276,14 @@ def load_config(path: str | Path = "config.json") -> GameConfig:
 
 def load_highscores() -> Highscores:
     """
-    Load the leaderboard from a JSON file.
+    Load the leaderboard from a JSON file, or from browser storage on web.
 
     Returns:
         A Highscores instance containing the loaded leaderboard data.
     """
+    if sys.platform == "emscripten":
+        return _load_highscores_web()
+
     resolved_path = get_highscore_path()
 
     if not resolved_path.exists():
@@ -292,12 +298,37 @@ def load_highscores() -> Highscores:
 
 
 def save_highscores(highscores: Highscores) -> None:
-    """Save the leaderboard to a JSON file.
+    """Save the leaderboard to a JSON file, or to browser storage on web.
 
     Args:
         highscores: The Highscores object to save.
     """
+    if sys.platform == "emscripten":
+        _save_highscores_web(highscores)
+        return
+
     path = get_highscore_path()
 
     with open(path, "w") as f:
         json.dump(highscores.model_dump(), f, indent=2)
+
+
+def _load_highscores_web() -> Highscores:
+    """Load the leaderboard from the browser's localStorage (pygbag build)."""
+    import platform
+
+    raw = platform.window.localStorage.getItem(WEB_HIGHSCORE_KEY)
+    if raw is None:
+        highscores = Highscores()
+        _save_highscores_web(highscores)
+        return highscores
+    return Highscores.model_validate(json.loads(raw))
+
+
+def _save_highscores_web(highscores: Highscores) -> None:
+    """Save the leaderboard to the browser's localStorage (pygbag build)."""
+    import platform
+
+    platform.window.localStorage.setItem(
+        WEB_HIGHSCORE_KEY, json.dumps(highscores.model_dump())
+    )

@@ -50,4 +50,17 @@ package: install
 	@uv run pyinstaller pacman.spec --noconfirm
 	@echo "Done. Executable is in dist/pacman"
 
+# Requires pygbag (pip install pygbag), kept out of pyproject.toml since it
+# would pull in pygame-ce alongside the desktop build's pygame. See web/README.md.
+web-build:
+	@echo "Syncing sources into web/ and building the WASM bundle..."
+	@./web/build.sh
+	@python3 -m pygbag --build web
+	@echo "Done. Files ready in web/build/web/"
+
+web-run:
+	@echo "Syncing sources into web/ and serving the WASM build locally..."
+	@./web/build.sh
+	@python3 -m pygbag web
+
 re: clean all
