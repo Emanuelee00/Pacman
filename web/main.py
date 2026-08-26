@@ -1,3 +1,8 @@
+# /// script
+# dependencies = [
+#   "pygame.base",
+# ]
+# ///
 """pygbag entry point for the Pacman web (WASM) build.
 
 Prepends vendor/ to sys.path so `import pydantic` resolves to the WASM-safe

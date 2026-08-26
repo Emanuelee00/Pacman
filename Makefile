@@ -1,44 +1,50 @@
 all: run
 
+UV := $(shell command -v uv 2>/dev/null || printf '%s/.local/bin/uv' "$$HOME")
+
 install:
 	@echo "Checking if uv is installed..."
-	@if ! command -v uv &> /dev/null; then \
+	@if [ ! -x "$(UV)" ]; then \
 		echo "uv could not be found. Installing uv..."; \
-		pip install --user uv > /dev/null; \
-		echo "uv installed successfully."; \
+		curl -LsSf https://astral.sh/uv/install.sh | sh; \
 	else \
 		echo "uv is already installed."; \
 	fi
 
 	@if [ ! -d ".venv" ]; then \
 		echo "Creating virtual environment..."; \
-		uv venv; \
+		$(UV) venv; \
 		echo "Virtual environment created successfully."; \
 	else \
 		echo "Virtual environment already exists."; \
 	fi
 
-	@uv sync --dev
-	@uv pip install -e . > /dev/null
+	@$(UV) sync --dev
+	@$(UV) pip install -e . > /dev/null
 
 run: install
+	@if [ -z "$${DISPLAY:-}$${WAYLAND_DISPLAY:-}" ]; then \
+		echo "No graphical display found on this server."; \
+		echo "Use 'make web-run' and open http://localhost:8020 instead."; \
+		exit 1; \
+	fi
 	@echo "Running game..."
-	@uv run python3 pac-man.py config.json
+	@$(UV) run python3 pac-man.py config.json
 
 debug:
 	@echo "Running game in debug mode..."
-	@uv run python3 -m pdb pac-man.py config.json
+	@$(UV) run python3 -m pdb pac-man.py config.json
 
 lint:
 	@echo "Running lint checks..."
-	@uv run flake8 .
-	@uv run mypy . --warn-return-any --warn-unused-ignores \
+	@$(UV) run flake8 .
+	@$(UV) run mypy . --warn-return-any --warn-unused-ignores \
 		--ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
 	@echo "Running strict lint checks..."
-	@uv run flake8 .
-	@uv run mypy . --strict
+	@$(UV) run flake8 .
+	@$(UV) run mypy . --strict
 
 clean:
 	@echo "Cleaning up generated files and caches..."
@@ -47,20 +53,24 @@ clean:
 
 package: install
 	@echo "Building standalone executable..."
-	@uv run pyinstaller pacman.spec --noconfirm
+	@$(UV) run pyinstaller pacman.spec --noconfirm
 	@echo "Done. Executable is in dist/pacman"
 
-# Requires pygbag (pip install pygbag), kept out of pyproject.toml since it
+# Requires pygbag (uv tool install pygbag), kept out of pyproject.toml since it
 # would pull in pygame-ce alongside the desktop build's pygame. See web/README.md.
-web-build:
-	@echo "Syncing sources into web/ and building the WASM bundle..."
+web-sync:
+	@echo "Syncing sources into web/..."
 	@./web/build.sh
-	@python3 -m pygbag --build web
+
+web-build: web-sync
+	@echo "Building the WASM bundle..."
+	@$(UV) tool run --from pygbag==0.9.3 pygbag \
+		--template web/pygbag.tmpl --build web
 	@echo "Done. Files ready in web/build/web/"
 
-web-run:
-	@echo "Syncing sources into web/ and serving the WASM build locally..."
-	@./web/build.sh
-	@python3 -m pygbag web
+web-run: web-sync
+	@echo "Serving the WASM build locally..."
+	@$(UV) tool run --from pygbag==0.9.3 pygbag \
+		--template web/pygbag.tmpl --port 8020 web
 
 re: clean all

@@ -34,8 +34,8 @@ From the repo root:
 
 ```bash
 web/build.sh                 # sync src/pacman, config.json, mazegenerator into web/
-pip install pygbag           # once
-python3 -m pygbag --build web   # produces web/build/web/{index.html,web.apk,...}
+uv tool install pygbag       # once
+make web-build               # produces web/build/web/{index.html,web.apk,...}
 ```
 
 ## Run it locally
@@ -45,27 +45,69 @@ pygbag's own dev server sets the `Cross-Origin-Embedder-Policy` /
 `python -m http.server` will NOT work reliably. Use pygbag's server instead:
 
 ```bash
-python3 -m pygbag web        # builds AND serves, then open the printed localhost URL
+make web-run                  # serves on http://localhost:8020
 ```
+
+Click the start prompt shown by Pygbag before the game opens. Browsers require
+this user interaction before SDL is allowed to initialize audio.
+
+The build is pinned to Pygbag 0.9.3. Its current template references a missing
+`browserfs.min.js`, so the local template loads that runtime dependency from
+Pygbag's stable 0.9 archive.
+
+Pygbag's runtime hardcodes its package CDN to `localhost:8000` whenever the
+page is served from any `localhost:8xxx` origin, unless the page URL carries a
+`?PYGPI=<origin>/cdn/` query param — the local template adds that so package
+downloads correctly target port 8020 instead (port 8000 on this machine is
+already used by an unrelated Docker service, so pygbag can't just bind there).
+
+`web/main.py` also needs a PEP 723 dependency block declaring `pygame.base`
+(not `pygame`) at the very top of the file:
+
+```python
+# /// script
+# dependencies = [
+#   "pygame.base",
+# ]
+# ///
+```
+
+Without it, pygbag never fetches the pygame-ce wheel: an empty `pygame`
+namespace package already exists in the base runtime, so `import pygame`
+"succeeds" with a stub missing everything (`Color`, `Rect`, `Surface`, ...)
+instead of raising an import error. The dependency name has to be
+`pygame.base`, not `pygame` — pygbag's resolver treats a bare `pygame` as
+already satisfied by that same stub and never downloads the real wheel.
 
 Open the browser's dev console while testing: any Python traceback (e.g. from
 a real incompatibility in the shim or in `mazegenerator`) will print there.
 
+`make run` is the native desktop build and requires a graphical display on the
+same machine. On a headless remote server, use `make web-run` instead.
+
 ## Deploying
 
 Copy the contents of `web/build/web/` (after running the `--build` command
-above) to your static host. **The host must send the same
-`Cross-Origin-Embedder-Policy: require-corp` /
-`Cross-Origin-Opener-Policy: same-origin` response headers**, or the WASM
-Python runtime will fail to initialize. Confirm your host supports this
-(e.g. via custom headers/`_headers` file) before relying on the deploy —
-plain GitHub Pages does not let you set custom headers.
+above) to your static host — any plain static file server works, no special
+response headers required. (This game doesn't use SDL threads/
+`SharedArrayBuffer` — `pthreads=False` at runtime — so don't set
+`Cross-Origin-Embedder-Policy: require-corp` on the host: it forces the
+browser to block the cross-origin `pythons.js`/`main.js`/wheel fetches from
+pygame-web's CDN unless that CDN also sends a matching CORP header, which it
+doesn't. `web/pygbag.tmpl`'s local-dev-only CDN proxying is what avoids this
+for `make web-run`; a plain deploy has no such proxy, so it must stay
+same-origin-header-free instead.)
 
-## What's verified vs. what still needs a real browser
+Deployed and verified working end to end at
+https://pacman.92-4-217-42.sslip.io — a multi-stage Docker image (`uv`-based
+build stage runs `pygbag --build web`, then plain `nginx:alpine` serves the
+output), defined outside this repo in the portfolio's deploy platform.
 
-Verified in this environment: `pygbag --build web` packages cleanly (73
-files), and loading the built page in a headless, GPU-less browser fetches
-and unpacks the app with no Python traceback or JS console error. What could
-**not** be verified here (no GPU, and headless-Chromium-specific CORS/COEP
-interactions with the CDN got in the way): that the game actually renders and
-is playable end to end. Test that in a real desktop browser before shipping.
+## What's verified
+
+Verified end to end in this environment, including actual rendering: loading
+the served page in a headless browser, clicking the start prompt, downloading
+the pygame-ce wheel, and reaching a playable frame (menu screen and in-maze
+gameplay both confirmed via screenshot — maze, Pac-Man, ghosts, and pacgums
+all draw correctly). Still worth a spot check in a real desktop browser
+before shipping, mainly for audio and input feel.
